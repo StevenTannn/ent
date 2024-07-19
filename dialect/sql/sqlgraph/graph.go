@@ -324,6 +324,7 @@ func HasNeighborsWith(q *sql.Selector, s *Step, pred func(*sql.Selector)) {
 		pred(matches)
 		q.Where(sql.Exists(matches))
 	case s.ToEdgeOwner():
+	case s.ToEdgeOwner():
 		to := builder.Table(s.Edge.Table).Schema(s.Edge.Schema)
 		// Avoid ambiguity in case both source
 		// and edge tables are the same.
@@ -550,8 +551,10 @@ func OrderByNeighborTerms(q *sql.Selector, s *Step, opts ...sql.OrderTerm) {
 	case s.ToEdgeOwner():
 		toT := build.Table(s.Edge.Table).Schema(s.Edge.Schema)
 		join = build.Select(toT.C(s.Edge.Columns[0])).
-			From(toT).
-			GroupBy(toT.C(s.Edge.Columns[0]))
+			From(toT)
+		if s.Edge.Rel != O2O {
+			join = join.GroupBy(toT.C(s.Edge.Columns[0]))
+		}
 		selectTerms(join, opts)
 		q.LeftJoin(join).
 			On(q.C(s.From.Column), join.C(s.Edge.Columns[0]))
